@@ -1,0 +1,62 @@
+﻿<svg height="@Radius" width="@Radius">
+    <circle cx="@(Radius / 2)" cy="@(Radius / 2)" r="@(Radius / 2)" fill="@BackgroundColor" />
+    <path d="@GetValuePath()" fill="@FillColor"></path>
+</svg>
+
+@code {
+    /// <summary>
+    /// Value between 0 and 1.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public double Value { get; set; }
+
+    /// <summary>
+    /// Hex color code.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string FillColor { get; set; } = null!;
+
+    /// <summary>
+    /// Hex color code.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public string BackgroundColor { get; set; } = null!;
+
+    /// <summary>
+    /// Radius of the pie chart in pixels.
+    /// </summary>
+    [Parameter, EditorRequired]
+    public int Radius { get; set; }
+
+    private const double MaxValue = 1;
+
+    protected override void OnInitialized()
+    {
+        if (Value < 0)
+        {
+            throw new ArgumentException("Value must be greater than or equal to 0");
+        }
+
+        if (Value > 1)
+        {
+            throw new ArgumentException("Value must be less than or equal to 1");
+        }
+    }
+
+    private string GetValuePath()
+    {
+        var angle = (Value / MaxValue) * 360.0;
+
+        if (Value >= MaxValue)
+        {
+            return $"M {Radius / 2} {Radius / 2} m -{Radius / 2}, 0 a {Radius / 2},{Radius / 2} 0 1,0 {Radius},0 a {Radius / 2},{Radius / 2} 0 1,0 -{Radius},0";
+        }
+
+        var radians = angle * Math.PI / 180.0;
+        var radius = Radius / 2.0;
+        var x = radius + radius * Math.Sin(radians);
+        var y = radius - radius * Math.Cos(radians);
+
+        return $"M {Radius / 2} {Radius / 2} L {Radius / 2} 0 A {radius} {radius} 0 {(angle > 180 ? 1 : 0)} 1 {x} {y} Z";
+    }
+}
